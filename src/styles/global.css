@@ -3097,3 +3097,108 @@ body {
 .dazy-status.speaking>span {
     background: #4f46e5;
 }
+
+/* =========================
+   DAZY HAIR
+========================= */
+
+.dazy-hair {
+    position: absolute;
+
+    top: 3px;
+    left: 11px;
+
+    width: 123px;
+    height: 72px;
+
+    z-index: 5;
+
+    pointer-events: none;
+}
+
+.dazy-hair::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius:
+        56px 56px 28px 28px;
+
+    background:
+        linear-gradient(145deg,
+            #1e293b,
+            #334155);
+
+    border:
+        4px solid #2b2435;
+
+    clip-path:
+        polygon(0 0,
+            100% 0,
+            100% 72%,
+            84% 59%,
+            76% 78%,
+            62% 60%,
+            50% 82%,
+            35% 60%,
+            21% 77%,
+            10% 58%,
+            0 70%);
+
+    box-shadow:
+        inset 0 -8px 12px rgba(255, 255, 255, 0.05);
+}
+
+.hair-lock {
+    position: absolute;
+
+    z-index: 6;
+
+    width: 24px;
+    height: 38px;
+
+    background:
+        linear-gradient(160deg,
+            #293548,
+            #111827);
+
+    border-radius:
+        60% 40% 65% 35%;
+
+    border:
+        2px solid #2b2435;
+}
+
+.lock-one {
+    top: 39px;
+    left: 12px;
+
+    transform:
+        rotate(18deg);
+}
+
+.lock-two {
+    top: 42px;
+    left: 39px;
+
+    transform:
+        rotate(6deg);
+}
+
+.lock-three {
+    top: 41px;
+    right: 35px;
+
+    transform:
+        rotate(-7deg);
+}
+
+.lock-four {
+    top: 37px;
+    right: 9px;
+
+    transform:
+        rotate(-20deg);
+}

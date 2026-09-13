@@ -29,6 +29,13 @@ export default function DazyAvatar({
 
                 <div className="dazy-ear ear-right" />
 
+                <div className="dazy-hair">
+                    <span className="hair-lock lock-one" />
+                    <span className="hair-lock lock-two" />
+                    <span className="hair-lock lock-three" />
+                    <span className="hair-lock lock-four" />
+                </div>
+
                 <div className="dazy-face">
 
                     <div className="brow brow-left" />
