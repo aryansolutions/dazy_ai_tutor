@@ -12,7 +12,7 @@ import QuickPrompts from "../components/QuickPrompts";
 
 import {
     useChat
-} from "../Hooks/useChat";
+} from "../hooks/useChat";
 
 import {
     useSpeechRecognition
