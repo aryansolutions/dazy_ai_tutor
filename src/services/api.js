@@ -1,5 +1,5 @@
 const API_URL =
-    "https://dazy-ai-tutor.onrender.com/";
+    "https://dazy-ai-tutor.onrender.com";
 
 const REQUEST_TIMEOUT = 45000;
 
