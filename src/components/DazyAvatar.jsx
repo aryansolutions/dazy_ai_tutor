@@ -10,9 +10,7 @@ export default function DazyAvatar({
         avatar-${size}
       `}
         >
-
             <div className="orbit orbit-one" />
-
             <div className="orbit orbit-two" />
 
             <div className="spark spark-one">
@@ -26,32 +24,31 @@ export default function DazyAvatar({
             <div className="dazy-body">
 
                 <div className="dazy-ear ear-left" />
-
                 <div className="dazy-ear ear-right" />
 
+                {/* HAIR */}
                 <div className="dazy-hair">
-                    <span className="hair-lock lock-one" />
-                    <span className="hair-lock lock-two" />
-                    <span className="hair-lock lock-three" />
-                    <span className="hair-lock lock-four" />
+                    <div className="hair-back" />
+                    <div className="hair-top" />
+
+                    <span className="bang bang-one" />
+                    <span className="bang bang-two" />
+                    <span className="bang bang-three" />
+                    <span className="bang bang-four" />
                 </div>
 
+                {/* FACE */}
                 <div className="dazy-face">
 
                     <div className="brow brow-left" />
-
                     <div className="brow brow-right" />
 
                     <div className="dazy-eyes">
-
                         <span className="eye" />
-
                         <span className="eye" />
-
                     </div>
 
                     <div className="cheek cheek-left" />
-
                     <div className="cheek cheek-right" />
 
                     <div className="dazy-mouth" />
@@ -61,46 +58,27 @@ export default function DazyAvatar({
                 <div className="dazy-neck" />
 
                 <div className="dazy-chest">
-
-                    <span>
-                        ♥
-                    </span>
-
+                    <span>♥</span>
                 </div>
 
             </div>
 
-            {state ===
-                "listening" && (
+            {state === "listening" && (
+                <div className="sound-wave">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                </div>
+            )}
 
-                    <div className="sound-wave">
-
-                        <span />
-
-                        <span />
-
-                        <span />
-
-                        <span />
-
-                    </div>
-
-                )}
-
-            {state ===
-                "thinking" && (
-
-                    <div className="thinking-indicator">
-
-                        <span />
-
-                        <span />
-
-                        <span />
-
-                    </div>
-
-                )}
+            {state === "thinking" && (
+                <div className="thinking-indicator">
+                    <span />
+                    <span />
+                    <span />
+                </div>
+            )}
 
         </div>
     );

@@ -3099,106 +3099,312 @@ body {
 }
 
 /* =========================
-   DAZY HAIR
+   
+/* =========================
+   DAZY AVATAR WRAP
+========================= */
+
+.dazy-wrap {
+    position: relative;
+    width: 270px;
+    height: 270px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.orbital-ring {
+    position: absolute;
+    border: 1.5px dashed rgba(129, 140, 248, .22);
+    border-radius: 50%;
+}
+
+.ring-one {
+    width: 235px;
+    height: 235px;
+}
+
+.ring-two {
+    width: 185px;
+    height: 185px;
+}
+
+.spark {
+    position: absolute;
+    color: #8b8cf8;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.spark-one {
+    top: 28px;
+    right: 26px;
+}
+
+.spark-two {
+    left: 22px;
+    bottom: 54px;
+}
+
+/* =========================
+   DAZY BODY
+========================= */
+
+.dazy-body {
+    position: relative;
+    width: 150px;
+    height: 205px;
+}
+
+.dazy-ear {
+    position: absolute;
+    top: 56px;
+    width: 22px;
+    height: 34px;
+    background: #f8fbff;
+    border: 4px solid #3b3451;
+    z-index: 2;
+}
+
+.ear-left {
+    left: -2px;
+    border-radius: 18px 0 0 18px;
+}
+
+.ear-right {
+    right: -2px;
+    border-radius: 0 18px 18px 0;
+}
+
+.dazy-face {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    width: 114px;
+    height: 118px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f6ff 100%);
+    border: 4px solid #3b3451;
+    z-index: 4;
+    overflow: hidden;
+}
+
+.face-shine {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    width: 32px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .7);
+    filter: blur(1px);
+}
+
+.dazy-brows {
+    position: absolute;
+    top: 36px;
+    left: 26px;
+    width: 60px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.brow {
+    width: 16px;
+    height: 4px;
+    border-radius: 8px;
+    background: #51476a;
+    opacity: .8;
+}
+
+.dazy-eyes {
+    position: absolute;
+    top: 51px;
+    left: 27px;
+    width: 58px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.eye {
+    width: 11px;
+    height: 18px;
+    border-radius: 50%;
+    background: #51476a;
+}
+
+.cheek {
+    position: absolute;
+    top: 72px;
+    width: 18px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(163, 177, 255, .28);
+}
+
+.cheek-left {
+    left: 14px;
+}
+
+.cheek-right {
+    right: 14px;
+}
+
+.dazy-mouth {
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 10px;
+    border-bottom: 4px solid #5b4561;
+    border-radius: 0 0 16px 16px;
+}
+
+.dazy-speaking .dazy-mouth {
+    width: 16px;
+    height: 14px;
+    border: 0;
+    background: #8b8cf8;
+    border-radius: 50%;
+}
+
+.dazy-neck {
+    position: absolute;
+    left: 50%;
+    top: 126px;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 18px;
+    background: #eef2ff;
+    border-left: 4px solid #3b3451;
+    border-right: 4px solid #3b3451;
+    border-bottom: 4px solid #3b3451;
+    border-radius: 0 0 10px 10px;
+    z-index: 2;
+}
+
+.dazy-chest {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 92px;
+    background: linear-gradient(180deg, #4f5dff 0%, #3159e8 100%);
+    border: 4px solid #3b3451;
+    border-radius: 32px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.heart {
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* =========================
+   BETTER HAIR
 ========================= */
 
 .dazy-hair {
     position: absolute;
-
-    top: 3px;
-    left: 11px;
-
-    width: 123px;
-    height: 72px;
-
-    z-index: 5;
-
+    top: 6px;
+    left: 12px;
+    width: 126px;
+    height: 88px;
+    z-index: 6;
     pointer-events: none;
 }
 
-.dazy-hair::before {
-    content: "";
-
+.hair-back {
     position: absolute;
-
-    inset: 0;
-
-    border-radius:
-        56px 56px 28px 28px;
-
-    background:
-        linear-gradient(145deg,
-            #1e293b,
-            #334155);
-
-    border:
-        4px solid #2b2435;
-
-    clip-path:
-        polygon(0 0,
-            100% 0,
-            100% 72%,
-            84% 59%,
-            76% 78%,
-            62% 60%,
-            50% 82%,
-            35% 60%,
-            21% 77%,
-            10% 58%,
-            0 70%);
-
-    box-shadow:
-        inset 0 -8px 12px rgba(255, 255, 255, 0.05);
+    top: 2px;
+    left: 6px;
+    width: 114px;
+    height: 74px;
+    border-radius: 58px 58px 30px 30px;
+    background: linear-gradient(180deg, #4b3f5f 0%, #362d47 100%);
+    border: 4px solid #3b3451;
+    box-shadow: inset 0 -7px 10px rgba(255, 255, 255, .05);
 }
 
-.hair-lock {
+.hair-top {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 122px;
+    height: 58px;
+    border-radius: 60px 60px 24px 20px;
+    background: linear-gradient(180deg, #5a4c71 0%, #403355 100%);
+    border: 4px solid #3b3451;
+    z-index: 2;
+}
 
-    z-index: 6;
+.bang {
+    position: absolute;
+    background: linear-gradient(180deg, #57476b 0%, #3b314f 100%);
+    border: 3px solid #3b3451;
+    z-index: 7;
+    box-shadow: inset -3px -4px 6px rgba(255, 255, 255, .04);
+}
 
+/* softer side-part look */
+
+.bang-one {
+    top: 28px;
+    left: 14px;
     width: 24px;
     height: 38px;
-
-    background:
-        linear-gradient(160deg,
-            #293548,
-            #111827);
-
-    border-radius:
-        60% 40% 65% 35%;
-
-    border:
-        2px solid #2b2435;
+    border-radius: 18px 14px 20px 14px;
+    transform: rotate(-22deg);
 }
 
-.lock-one {
-    top: 39px;
-    left: 12px;
-
-    transform:
-        rotate(18deg);
+.bang-two {
+    top: 22px;
+    left: 34px;
+    width: 25px;
+    height: 42px;
+    border-radius: 18px 16px 20px 16px;
+    transform: rotate(-8deg);
 }
 
-.lock-two {
-    top: 42px;
-    left: 39px;
-
-    transform:
-        rotate(6deg);
+.bang-three {
+    top: 22px;
+    left: 58px;
+    width: 23px;
+    height: 39px;
+    border-radius: 16px 15px 18px 15px;
+    transform: rotate(9deg);
 }
 
-.lock-three {
-    top: 41px;
-    right: 35px;
-
-    transform:
-        rotate(-7deg);
+.bang-four {
+    top: 27px;
+    left: 78px;
+    width: 20px;
+    height: 32px;
+    border-radius: 15px 15px 16px 14px;
+    transform: rotate(18deg);
 }
 
-.lock-four {
-    top: 37px;
-    right: 9px;
+/* subtle animation */
 
-    transform:
-        rotate(-20deg);
+.dazy-listening .hair-top,
+.dazy-listening .hair-back {
+    animation: hairFloat 2.4s ease-in-out infinite;
+}
+
+@keyframes hairFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-2px);
+    }
 }
