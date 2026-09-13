@@ -1,0 +1,17 @@
+.env
+.env.local
+
+__pycache__/
+*.pyc
+*.pyo
+
+.venv/
+venv/
+
+.pytest_cache/
+
+.vscode/
+.idea/
+.env
+backend/.env
+.DS_Store
