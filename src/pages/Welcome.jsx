@@ -8,7 +8,6 @@ const years = [
     "3rd Year",
     "4th Year",
     "5th Year",
-    "Final Year",
     "Postgraduate",
     "Graduated",
     "Other",
@@ -148,7 +147,7 @@ export default function Welcome({
                                             e.target.value
                                         )
                                     }
-                                    placeholder="Aryan"
+                                    placeholder="Name"
                                     maxLength={40}
                                     autoComplete="given-name"
                                     autoFocus
@@ -197,7 +196,7 @@ export default function Welcome({
                                             e.target.value
                                         )
                                     }
-                                    placeholder="B.Tech Electrical and Electronics Engineering"
+                                    placeholder="Degree & Branch"
                                     maxLength={100}
                                 />
 

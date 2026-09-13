@@ -2819,3 +2819,281 @@ button:disabled {
             auto !important;
     }
 }
+
+/* =========================================
+   DAZY 18+ COLLEGE THEME
+   Slate + Indigo + Blue
+========================================= */
+
+:root {
+    --text: #172033;
+    --text-soft: #667085;
+
+    --pink: #4f46e5;
+    --pink-dark: #3730a3;
+
+    --purple: #2563eb;
+
+    --border: rgba(15, 23, 42, 0.10);
+
+    --shadow:
+        0 24px 65px rgba(15, 23, 42, 0.10);
+}
+
+/* PAGE BACKGROUND */
+
+body {
+    background:
+        radial-gradient(circle at 5% 0%,
+            #e8edff,
+            transparent 34rem),
+        radial-gradient(circle at 100% 20%,
+            #e6f6ff,
+            transparent 38rem),
+        #f8fafc;
+}
+
+/* BACKGROUND BLOBS */
+
+.blob-one,
+.tutor-blob-one {
+    background: #c7d2fe;
+}
+
+.blob-two,
+.tutor-blob-two {
+    background: #bae6fd;
+}
+
+/* BRAND */
+
+.brand-dot,
+.logo-icon {
+    background:
+        linear-gradient(135deg,
+            #4f46e5,
+            #2563eb);
+}
+
+.brand-dot {
+    box-shadow:
+        0 0 0 5px #eef2ff;
+}
+
+/* MAIN HEADING */
+
+.welcome-copy h1 span {
+    background:
+        linear-gradient(110deg,
+            #3730a3,
+            #2563eb);
+
+    color: transparent;
+
+    background-clip: text;
+
+    -webkit-background-clip: text;
+}
+
+/* EYEBROW */
+
+.eyebrow {
+    color: #4f46e5;
+}
+
+/* INPUT FOCUS */
+
+.welcome-form input:focus,
+.welcome-form select:focus {
+    border-color: #818cf8;
+
+    box-shadow:
+        0 0 0 4px rgba(79, 70, 229, 0.08);
+}
+
+/* CHECKBOX */
+
+.adult-check input {
+    accent-color: #4f46e5;
+}
+
+/* START BUTTON */
+
+.start-button {
+    background:
+        linear-gradient(120deg,
+            #4f46e5,
+            #2563eb);
+
+    box-shadow:
+        0 14px 30px rgba(37, 99, 235, 0.20);
+}
+
+.start-button:hover {
+    box-shadow:
+        0 20px 40px rgba(37, 99, 235, 0.25);
+}
+
+/* RIGHT SIDE WELCOME AREA */
+
+.avatar-stage {
+    background:
+        radial-gradient(circle at center,
+            #ffffff,
+            transparent 42%),
+        linear-gradient(145deg,
+            #eef2ff,
+            #f8fafc,
+            #ecfeff);
+}
+
+/* FLOATING CARDS */
+
+.floating-card {
+    color: #334155;
+
+    border:
+        1px solid rgba(15, 23, 42, 0.08);
+
+    box-shadow:
+        0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+/* DAZY SIDE PANEL */
+
+.dazy-side {
+    background:
+        radial-gradient(circle at 50% 45%,
+            #ffffff,
+            transparent 31%),
+        linear-gradient(150deg,
+            #eef2ff,
+            #f8fafc);
+}
+
+/* DAZY BODY */
+
+.dazy-chest {
+    background:
+        linear-gradient(140deg,
+            #4f46e5,
+            #2563eb);
+}
+
+/* LESS PINK FACE */
+
+.dazy-face {
+    background:
+        radial-gradient(circle at 35% 25%,
+            white,
+            transparent 25%),
+        linear-gradient(145deg,
+            #ffffff,
+            #eef2ff);
+}
+
+.dazy-ear {
+    background: #e0e7ff;
+}
+
+.dazy-neck {
+    background: #eef2ff;
+}
+
+.cheek {
+    background:
+        rgba(79, 70, 229, 0.12);
+}
+
+.dazy-speaking .dazy-mouth {
+    background: #818cf8;
+}
+
+/* SPARKS */
+
+.spark {
+    color: #4f46e5;
+}
+
+/* LISTENING WAVE */
+
+.sound-wave span {
+    background: #2563eb;
+}
+
+/* VOICE BUTTON */
+
+.voice-toggle.enabled {
+    color: #3730a3;
+    background: #eef2ff;
+}
+
+/* PROFILE */
+
+.profile-avatar {
+    background:
+        linear-gradient(135deg,
+            #4f46e5,
+            #2563eb);
+}
+
+/* USER CHAT MESSAGE */
+
+.user-message .message-bubble {
+    background:
+        linear-gradient(135deg,
+            #4f46e5,
+            #2563eb);
+
+    box-shadow:
+        0 10px 24px rgba(37, 99, 235, 0.15);
+}
+
+/* MICROPHONE */
+
+.microphone-button {
+    color: #4f46e5;
+    background: #eef2ff;
+}
+
+.microphone-button.active {
+    background: #e0e7ff;
+}
+
+/* SEND BUTTON */
+
+.send-button {
+    background:
+        linear-gradient(135deg,
+            #4f46e5,
+            #2563eb);
+
+    box-shadow:
+        0 10px 22px rgba(37, 99, 235, 0.18);
+}
+
+/* QUICK PROMPTS */
+
+.quick-prompts button:hover {
+    color: #3730a3;
+    border-color: #a5b4fc;
+}
+
+/* COMPOSER */
+
+.composer:focus-within {
+    border-color: #818cf8;
+
+    box-shadow:
+        0 0 0 4px rgba(79, 70, 229, 0.06);
+}
+
+/* STATUS DOT */
+
+.dazy-status.listening>span {
+    background: #2563eb;
+}
+
+.dazy-status.speaking>span {
+    background: #4f46e5;
+}
