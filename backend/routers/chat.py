@@ -3,22 +3,22 @@ import logging
 from fastapi import (
     APIRouter,
     HTTPException,
-    status
+    status,
 )
 
 from schemas import (
     ChatRequest,
-    ChatResponse
+    ChatResponse,
 )
 
 from services.gemini_service import (
-    generate_tutor_response
+    generate_tutor_response,
 )
 
 from services.memory_service import (
     upsert_session,
     get_recent_messages,
-    save_turn
+    save_turn,
 )
 
 
@@ -33,20 +33,20 @@ router = APIRouter(
 
 
 def detect_emotion(
-    message: str
+    message: str,
 ):
-
     text = message.lower()
-
 
     encouraging_phrases = (
         "quiz me",
         "interview me",
         "test me",
         "i understand",
-        "i got it"
+        "i got it",
+        "got it",
+        "thank you",
+        "thanks",
     )
-
 
     thinking_phrases = (
         "why",
@@ -55,55 +55,54 @@ def detect_emotion(
         "derive",
         "solve",
         "compare",
-        "difference"
+        "difference",
+        "explain",
     )
 
-
     if any(
         phrase in text
-        for phrase in encouraging_phrases
+        for phrase
+        in encouraging_phrases
     ):
-
         return "encouraging"
 
-
     if any(
         phrase in text
-        for phrase in thinking_phrases
+        for phrase
+        in thinking_phrases
     ):
-
         return "thinking"
-
 
     return "explaining"
 
 
 @router.post(
     "/chat",
-    response_model=ChatResponse
+    response_model=ChatResponse,
 )
 def chat(
-    request: ChatRequest
+    request: ChatRequest,
 ):
 
     if not request.adult_confirmed:
 
         raise HTTPException(
-
             status_code=
                 status.HTTP_403_FORBIDDEN,
 
             detail=(
                 "Dazy is currently available "
                 "only to users aged 18 or older."
-            )
+            ),
         )
-
 
     try:
 
-        upsert_session(
+        # =====================================
+        # CREATE / UPDATE SESSION
+        # =====================================
 
+        upsert_session(
             session_id=
                 request.session_id,
 
@@ -117,9 +116,12 @@ def chat(
                 request.year,
 
             subject=
-                request.subject
+                request.subject,
         )
 
+        # =====================================
+        # GET RECENT CHAT MEMORY
+        # =====================================
 
         history = (
             get_recent_messages(
@@ -127,10 +129,12 @@ def chat(
             )
         )
 
+        # =====================================
+        # GENERATE AI RESPONSE
+        # =====================================
 
         answer = (
             generate_tutor_response(
-
                 student_name=
                     request.student_name,
 
@@ -143,14 +147,20 @@ def chat(
                 subject=
                     request.subject,
 
+                study_mode=
+                    request.study_mode,
+
                 history=
                     history,
 
                 message=
-                    request.message
+                    request.message,
             )
         )
 
+        # =====================================
+        # AVATAR / RESPONSE EMOTION
+        # =====================================
 
         emotion = (
             detect_emotion(
@@ -158,9 +168,11 @@ def chat(
             )
         )
 
+        # =====================================
+        # SAVE CONVERSATION
+        # =====================================
 
         save_turn(
-
             session_id=
                 request.session_id,
 
@@ -171,12 +183,14 @@ def chat(
                 answer,
 
             emotion=
-                emotion
+                emotion,
         )
 
+        # =====================================
+        # RESPONSE TO REACT
+        # =====================================
 
         return ChatResponse(
-
             response=
                 answer,
 
@@ -184,26 +198,21 @@ def chat(
                 emotion,
 
             session_id=
-                request.session_id
+                request.session_id,
         )
-
 
     except RuntimeError as error:
 
         raise HTTPException(
-
             status_code=
                 status.HTTP_503_SERVICE_UNAVAILABLE,
 
             detail=
-                str(error)
+                str(error),
         )
 
-
     except HTTPException:
-
         raise
-
 
     except Exception:
 
@@ -211,14 +220,12 @@ def chat(
             "Unexpected Dazy chat error"
         )
 
-
         raise HTTPException(
-
             status_code=
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
 
             detail=(
                 "Something went wrong while "
                 "processing your message."
-            )
+            ),
         )

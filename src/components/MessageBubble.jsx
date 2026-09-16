@@ -1,10 +1,34 @@
+import ReactMarkdown
+    from "react-markdown";
+
+
 export default function MessageBubble({
     message,
 }) {
+
     const isUser =
         message.role === "user";
 
+
+    function formatTime(
+        timestamp
+    ) {
+
+        return new Date(
+            timestamp ||
+            Date.now()
+        ).toLocaleTimeString(
+            [],
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+            }
+        );
+    }
+
+
     return (
+
         <div
             className={
                 isUser
@@ -12,11 +36,25 @@ export default function MessageBubble({
                     : "message-row assistant-row"
             }
         >
-            {!isUser && (
-                <div className="message-avatar">
-                    D
-                </div>
-            )}
+
+            {/* ================================
+          DAZY AVATAR
+      ================================= */}
+
+            {
+                !isUser && (
+
+                    <div className="message-avatar">
+                        D
+                    </div>
+
+                )
+            }
+
+
+            {/* ================================
+          MESSAGE
+      ================================= */}
 
             <div
                 className={
@@ -25,30 +63,62 @@ export default function MessageBubble({
                         : "message-bubble assistant-message"
                 }
             >
-                {!isUser && (
-                    <div className="message-meta">
-                        <strong>Dazy</strong>
 
-                        <span>
-                            AI Tutor
-                        </span>
-                    </div>
-                )}
+                {
+                    !isUser && (
+
+                        <div className="message-meta">
+
+                            <strong>
+                                Dazy
+                            </strong>
+
+                            <span>
+                                AI Tutor
+                            </span>
+
+                        </div>
+
+                    )
+                }
+
 
                 <div className="message-content">
-                    {message.content}
+
+                    {
+                        isUser
+                            ? (
+                                message.content
+                            )
+                            : (
+
+                                <ReactMarkdown>
+
+                                    {
+                                        message.content
+                                    }
+
+                                </ReactMarkdown>
+
+                            )
+                    }
+
                 </div>
 
+
                 <div className="message-time">
-                    {new Date(
-                        message.createdAt ||
-                        Date.now()
-                    ).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}
+
+                    {
+                        formatTime(
+                            message.createdAt
+                        )
+                    }
+
                 </div>
+
             </div>
+
         </div>
+
     );
 }

@@ -7,7 +7,7 @@ import {
     sendChatMessage,
 } from "../services/api";
 
-function uuid() {
+function createId() {
     if (crypto.randomUUID) {
         return crypto.randomUUID();
     }
@@ -15,10 +15,9 @@ function uuid() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
         .replace(/[xy]/g, (character) => {
             const random =
-                (crypto.getRandomValues(
+                crypto.getRandomValues(
                     new Uint8Array(1)
-                )[0] %
-                    16);
+                )[0] % 16;
 
             const value =
                 character === "x"
@@ -36,7 +35,7 @@ function getSessionId() {
         );
 
     if (!sessionId) {
-        sessionId = uuid();
+        sessionId = createId();
 
         localStorage.setItem(
             "dazy_session_id",
@@ -55,14 +54,12 @@ function loadMessages() {
             )
         );
 
-        if (Array.isArray(saved)) {
-            return saved;
-        }
+        return Array.isArray(saved)
+            ? saved
+            : [];
     } catch {
-        // Ignore invalid local data
+        return [];
     }
-
-    return [];
 }
 
 export function useChat(profile) {
@@ -93,7 +90,7 @@ export function useChat(profile) {
         }
 
         const userMessage = {
-            id: uuid(),
+            id: createId(),
             role: "user",
             content: cleanText,
             createdAt: Date.now(),
@@ -122,8 +119,10 @@ export function useChat(profile) {
                     subject:
                         profile.subject || "",
 
-                    message:
-                        `Study mode: ${studyMode}. ${cleanText}`,
+                    study_mode: studyMode,
+
+                    // Actual user message stays untouched
+                    message: cleanText,
 
                     session_id:
                         getSessionId(),
@@ -132,10 +131,9 @@ export function useChat(profile) {
                 });
 
             const assistantMessage = {
-                id: uuid(),
+                id: createId(),
                 role: "assistant",
-                content:
-                    response.response,
+                content: response.response,
 
                 emotion:
                     response.emotion ||
@@ -150,6 +148,7 @@ export function useChat(profile) {
             ]);
 
             return response.response;
+
         } catch (requestError) {
             setError(
                 requestError.message ||
@@ -157,6 +156,7 @@ export function useChat(profile) {
             );
 
             return null;
+
         } finally {
             setIsLoading(false);
         }

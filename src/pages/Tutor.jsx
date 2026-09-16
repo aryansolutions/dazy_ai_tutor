@@ -3,9 +3,14 @@ import {
     useState,
 } from "react";
 
-import DazyAvatar from "../components/DazyAvatar";
-import ChatWindow from "../components/ChatWindow";
-import ChatComposer from "../components/ChatComposer";
+import DazyAvatar
+    from "../components/DazyAvatar";
+
+import ChatWindow
+    from "../components/ChatWindow";
+
+import ChatComposer
+    from "../components/ChatComposer";
 
 import {
     useChat,
@@ -18,6 +23,7 @@ import {
 import {
     useSpeechSynthesis,
 } from "../hooks/useSpeechSynthesis";
+
 
 const STUDY_MODES = [
     {
@@ -52,11 +58,13 @@ const STUDY_MODES = [
     },
 ];
 
+
 const MODE_PROMPTS = {
+
     Teach: [
         "Explain this topic from the basics",
         "Give me a practical example",
-        "Explain this like I am learning it for the first time",
+        "Explain this in a simple way",
     ],
 
     Quiz: [
@@ -84,41 +92,72 @@ const MODE_PROMPTS = {
     ],
 };
 
-function formatTime(seconds) {
-    const minutes = Math.floor(
-        seconds / 60
-    );
+
+function formatTime(
+    seconds
+) {
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
 
     const remaining =
         seconds % 60;
 
-    return `${String(minutes).padStart(
+    return `${String(
+        minutes
+    ).padStart(
         2,
         "0"
-    )}:${String(remaining).padStart(
+    )}:${String(
+        remaining
+    ).padStart(
         2,
         "0"
     )}`;
 }
 
+
 export default function Tutor({
     profile,
     onResetProfile,
 }) {
-    const [studyMode, setStudyMode] =
-        useState("Teach");
 
-    const [draft, setDraft] =
-        useState("");
+    const [
+        studyMode,
+        setStudyMode,
+    ] = useState(
+        "Teach"
+    );
 
-    const [autoSpeak, setAutoSpeak] =
-        useState(true);
+    const [
+        draft,
+        setDraft,
+    ] = useState(
+        ""
+    );
 
-    const [timerSeconds, setTimerSeconds] =
-        useState(25 * 60);
+    const [
+        autoSpeak,
+        setAutoSpeak,
+    ] = useState(
+        true
+    );
 
-    const [timerRunning, setTimerRunning] =
-        useState(false);
+    const [
+        timerSeconds,
+        setTimerSeconds,
+    ] = useState(
+        25 * 60
+    );
+
+    const [
+        timerRunning,
+        setTimerRunning,
+    ] = useState(
+        false
+    );
+
 
     const {
         messages,
@@ -126,7 +165,10 @@ export default function Tutor({
         error,
         sendMessage,
         clearMessages,
-    } = useChat(profile);
+    } = useChat(
+        profile
+    );
+
 
     const {
         speak,
@@ -134,60 +176,95 @@ export default function Tutor({
         speaking,
     } = useSpeechSynthesis();
 
+
     const {
         supported,
         isListening,
         startListening,
         stopListening,
     } = useSpeechRecognition(
-        (text) => setDraft(text)
+        (text) => {
+            setDraft(text);
+        }
     );
 
+
+    // =====================================
+    // FOCUS TIMER
+    // =====================================
+
     useEffect(() => {
+
         if (!timerRunning) {
             return;
         }
 
         const interval =
-            setInterval(() => {
-                setTimerSeconds(
-                    (current) => {
-                        if (current <= 1) {
-                            clearInterval(
-                                interval
-                            );
+            setInterval(
+                () => {
 
-                            setTimerRunning(
-                                false
-                            );
+                    setTimerSeconds(
+                        (current) => {
 
-                            return 0;
+                            if (
+                                current <= 1
+                            ) {
+
+                                clearInterval(
+                                    interval
+                                );
+
+                                setTimerRunning(
+                                    false
+                                );
+
+                                return 0;
+                            }
+
+                            return (
+                                current - 1
+                            );
                         }
+                    );
 
-                        return current - 1;
-                    }
-                );
-            }, 1000);
+                },
+                1000
+            );
 
         return () =>
-            clearInterval(interval);
-    }, [timerRunning]);
+            clearInterval(
+                interval
+            );
+
+    }, [
+        timerRunning
+    ]);
+
+
+    // =====================================
+    // SEND MESSAGE
+    // =====================================
 
     async function handleSend(
         customText
     ) {
+
         const text =
             (
                 customText ??
                 draft
             ).trim();
 
-        if (!text) {
+        if (
+            !text ||
+            isLoading
+        ) {
             return;
         }
 
         setDraft("");
 
+        // Stop previous speech
         if (speaking) {
             cancel();
         }
@@ -202,50 +279,102 @@ export default function Tutor({
             response &&
             autoSpeak
         ) {
-            speak(response);
+            speak(
+                response
+            );
         }
     }
 
+
+    // =====================================
+    // VOICE INPUT
+    // =====================================
+
     function toggleVoice() {
-        if (isListening) {
+
+        if (
+            isListening
+        ) {
             stopListening();
         } else {
             startListening();
         }
     }
 
+
+    // =====================================
+    // TIMER RESET
+    // =====================================
+
     function resetTimer() {
-        setTimerRunning(false);
-        setTimerSeconds(25 * 60);
+
+        setTimerRunning(
+            false
+        );
+
+        setTimerSeconds(
+            25 * 60
+        );
     }
 
-    let avatarState = "idle";
 
-    if (isListening) {
-        avatarState = "listening";
-    } else if (isLoading) {
-        avatarState = "thinking";
-    } else if (speaking) {
-        avatarState = "speaking";
+    // =====================================
+    // AVATAR STATE
+    // =====================================
+
+    let avatarState =
+        "idle";
+
+    if (
+        isListening
+    ) {
+        avatarState =
+            "listening";
+
+    } else if (
+        isLoading
+    ) {
+        avatarState =
+            "thinking";
+
+    } else if (
+        speaking
+    ) {
+        avatarState =
+            "speaking";
     }
+
 
     return (
         <section className="workspace-page">
+
+            {/* ================================
+          WORKSPACE HEADER
+      ================================= */}
+
             <div className="workspace-topbar">
+
                 <div>
+
                     <span className="workspace-label">
                         LEARNING WORKSPACE
                     </span>
 
                     <h1>
-                        {profile.subject
-                            ? profile.subject
-                            : "Study session"}
+                        {
+                            profile.subject
+                                ? profile.subject
+                                : "Study session"
+                        }
                     </h1>
+
                 </div>
 
+
                 <div className="workspace-top-actions">
+
                     <div className="workspace-course">
+
                         <span>
                             {profile.course}
                         </span>
@@ -253,64 +382,107 @@ export default function Tutor({
                         <small>
                             {profile.year}
                         </small>
+
                     </div>
+
 
                     <button
                         className="outline-danger"
-                        onClick={onResetProfile}
+                        onClick={
+                            onResetProfile
+                        }
                     >
                         Change profile
                     </button>
+
                 </div>
+
             </div>
 
+
             <div className="workspace-layout">
+
+                {/* ================================
+            LEFT SIDEBAR
+        ================================= */}
+
                 <aside className="study-sidebar">
+
                     <div className="sidebar-section">
+
                         <span className="sidebar-title">
                             STUDY MODE
                         </span>
 
+
                         <div className="study-mode-list">
-                            {STUDY_MODES.map(
-                                (mode) => (
-                                    <button
-                                        key={mode.name}
-                                        className={`study-mode-button ${studyMode ===
-                                                mode.name
-                                                ? "mode-selected"
-                                                : ""
-                                            }`}
-                                        onClick={() =>
-                                            setStudyMode(
-                                                mode.name
-                                            )
-                                        }
-                                    >
-                                        <span className="mode-index">
-                                            {mode.icon}
-                                        </span>
 
-                                        <div>
-                                            <strong>
-                                                {mode.name}
-                                            </strong>
+                            {
+                                STUDY_MODES.map(
+                                    (mode) => (
 
-                                            <small>
-                                                {
-                                                    mode.description
+                                        <button
+
+                                            key={
+                                                mode.name
+                                            }
+
+                                            className={`
+                        study-mode-button
+                        ${studyMode ===
+                                                    mode.name
+                                                    ? "mode-selected"
+                                                    : ""
                                                 }
-                                            </small>
-                                        </div>
-                                    </button>
+                      `}
+
+                                            onClick={() =>
+                                                setStudyMode(
+                                                    mode.name
+                                                )
+                                            }
+                                        >
+
+                                            <span className="mode-index">
+                                                {mode.icon}
+                                            </span>
+
+
+                                            <div>
+
+                                                <strong>
+                                                    {mode.name}
+                                                </strong>
+
+                                                <small>
+                                                    {
+                                                        mode.description
+                                                    }
+                                                </small>
+
+                                            </div>
+
+                                        </button>
+
+                                    )
                                 )
-                            )}
+                            }
+
                         </div>
+
                     </div>
 
+
+                    {/* ================================
+              FOCUS TIMER
+          ================================= */}
+
                     <div className="focus-card">
+
                         <div className="focus-heading">
+
                             <div>
+
                                 <span>
                                     FOCUS TIMER
                                 </span>
@@ -318,29 +490,45 @@ export default function Tutor({
                                 <strong>
                                     Deep work
                                 </strong>
+
                             </div>
 
+
                             <div className="timer-dot" />
+
                         </div>
+
 
                         <div className="focus-time">
-                            {formatTime(
-                                timerSeconds
-                            )}
+
+                            {
+                                formatTime(
+                                    timerSeconds
+                                )
+                            }
+
                         </div>
+
 
                         <div className="timer-track">
+
                             <div
                                 style={{
-                                    width: `${(timerSeconds /
-                                            (25 * 60)) *
+                                    width:
+                                        `${(
+                                            timerSeconds /
+                                            (25 * 60)
+                                        ) *
                                         100
-                                        }%`,
+                                        }%`
                                 }}
                             />
+
                         </div>
 
+
                         <div className="focus-actions">
+
                             <button
                                 onClick={() =>
                                     setTimerRunning(
@@ -349,116 +537,236 @@ export default function Tutor({
                                     )
                                 }
                             >
-                                {timerRunning
-                                    ? "Pause"
-                                    : "Start"}
+                                {
+                                    timerRunning
+                                        ? "Pause"
+                                        : "Start"
+                                }
                             </button>
 
+
                             <button
-                                onClick={resetTimer}
+                                onClick={
+                                    resetTimer
+                                }
                             >
                                 Reset
                             </button>
+
                         </div>
+
                     </div>
 
+
+                    {/* ================================
+              SESSION STATS
+          ================================= */}
+
                     <div className="session-card">
+
                         <span className="sidebar-title">
                             SESSION
                         </span>
 
+
                         <div>
+
                             <span>
                                 Messages
                             </span>
 
                             <strong>
-                                {messages.length}
+                                {
+                                    messages.length
+                                }
                             </strong>
+
                         </div>
 
+
                         <div>
+
                             <span>
                                 Mode
                             </span>
 
                             <strong>
-                                {studyMode}
+                                {
+                                    studyMode
+                                }
                             </strong>
+
                         </div>
 
+
                         <div>
+
                             <span>
                                 Voice
                             </span>
 
                             <strong>
-                                {supported
-                                    ? "Ready"
-                                    : "Unavailable"}
+                                {
+                                    supported
+                                        ? "Ready"
+                                        : "Unavailable"
+                                }
                             </strong>
+
                         </div>
 
+
                         <button
-                            onClick={clearMessages}
+                            onClick={() => {
+
+                                cancel();
+
+                                clearMessages();
+
+                            }}
                         >
                             Clear conversation
                         </button>
+
                     </div>
+
                 </aside>
 
+
+                {/* ================================
+            MAIN CHAT
+        ================================= */}
+
                 <main className="tutor-panel">
+
                     <div className="tutor-header">
+
                         <div className="tutor-identity">
+
                             <div className="mini-dazy">
+
                                 <DazyAvatar
-                                    state={avatarState}
+                                    state={
+                                        avatarState
+                                    }
                                     size="small"
                                 />
+
                             </div>
 
+
                             <div>
+
                                 <div className="assistant-name-row">
-                                    <h2>Dazy</h2>
+
+                                    <h2>
+                                        Dazy
+                                    </h2>
 
                                     <span className="verified-badge">
                                         AI
                                     </span>
+
                                 </div>
 
+
                                 <p>
-                                    {isListening
-                                        ? "Listening to you..."
-                                        : isLoading
-                                            ? "Thinking..."
-                                            : speaking
-                                                ? "Speaking..."
-                                                : `${studyMode} mode • Ready`}
+
+                                    {
+                                        isListening
+                                            ? "Listening to you..."
+
+                                            : isLoading
+                                                ? "Thinking..."
+
+                                                : speaking
+                                                    ? "Speaking..."
+
+                                                    : `${studyMode} mode • Ready`
+                                    }
+
                                 </p>
+
                             </div>
+
                         </div>
 
+
+                        {/* ================================
+                VOICE CONTROLS
+            ================================= */}
+
                         <div className="tutor-controls">
+
+                            {
+                                speaking && (
+
+                                    <button
+                                        className="stop-speaking-button"
+                                        onClick={
+                                            cancel
+                                        }
+                                        type="button"
+                                    >
+
+                                        <span className="stop-icon">
+                                            ■
+                                        </span>
+
+                                        Stop voice
+
+                                    </button>
+
+                                )
+                            }
+
+
                             <label className="speak-toggle">
+
                                 <input
                                     type="checkbox"
-                                    checked={autoSpeak}
-                                    onChange={(event) =>
-                                        setAutoSpeak(
-                                            event.target
-                                                .checked
-                                        )
+                                    checked={
+                                        autoSpeak
+                                    }
+                                    onChange={
+                                        (event) => {
+
+                                            const enabled =
+                                                event.target.checked;
+
+                                            setAutoSpeak(
+                                                enabled
+                                            );
+
+                                            if (
+                                                !enabled
+                                            ) {
+                                                cancel();
+                                            }
+
+                                        }
                                     }
                                 />
 
                                 <span />
+
                                 Voice replies
+
                             </label>
+
                         </div>
+
                     </div>
 
+
+                    {/* ================================
+              MODE INDICATOR
+          ================================= */}
+
                     <div className="active-mode-banner">
+
                         <div>
+
                             <span>
                                 ACTIVE MODE
                             </span>
@@ -466,9 +774,12 @@ export default function Tutor({
                             <strong>
                                 {studyMode}
                             </strong>
+
                         </div>
 
+
                         <p>
+
                             {
                                 STUDY_MODES.find(
                                     (mode) =>
@@ -476,137 +787,248 @@ export default function Tutor({
                                         studyMode
                                 )?.description
                             }
+
                         </p>
+
                     </div>
+
+
+                    {/* ================================
+              CHAT MESSAGES
+          ================================= */}
 
                     <ChatWindow
-                        messages={messages}
-                        isLoading={isLoading}
+                        messages={
+                            messages
+                        }
+                        isLoading={
+                            isLoading
+                        }
                     />
 
-                    {error && (
-                        <div className="chat-error">
-                            <span>!</span>
-                            {error}
-                        </div>
-                    )}
+
+                    {
+                        error && (
+
+                            <div className="chat-error">
+
+                                <span>
+                                    !
+                                </span>
+
+                                {error}
+
+                            </div>
+
+                        )
+                    }
+
+
+                    {/* ================================
+              QUICK PROMPTS
+          ================================= */}
 
                     <div className="quick-prompts">
-                        {MODE_PROMPTS[
-                            studyMode
-                        ].map((prompt) => (
-                            <button
-                                key={prompt}
-                                onClick={() =>
-                                    handleSend(prompt)
-                                }
-                                disabled={isLoading}
-                            >
-                                {prompt}
-                            </button>
-                        ))}
+
+                        {
+                            MODE_PROMPTS[
+                                studyMode
+                            ].map(
+                                (prompt) => (
+
+                                    <button
+                                        key={
+                                            prompt
+                                        }
+
+                                        onClick={() =>
+                                            handleSend(
+                                                prompt
+                                            )
+                                        }
+
+                                        disabled={
+                                            isLoading
+                                        }
+                                    >
+                                        {prompt}
+                                    </button>
+
+                                )
+                            )
+                        }
+
                     </div>
 
+
+                    {/* ================================
+              INPUT
+          ================================= */}
+
                     <ChatComposer
-                        value={draft}
-                        onChange={setDraft}
+                        value={
+                            draft
+                        }
+
+                        onChange={
+                            setDraft
+                        }
+
                         onSend={() =>
                             handleSend()
                         }
-                        onVoice={toggleVoice}
+
+                        onVoice={
+                            toggleVoice
+                        }
+
                         isListening={
                             isListening
                         }
+
                         speechSupported={
                             supported
                         }
-                        isLoading={isLoading}
+
+                        isLoading={
+                            isLoading
+                        }
                     />
 
+
                     <div className="ai-disclaimer">
-                        Dazy can make mistakes. Verify
-                        important academic, medical,
-                        legal or financial information
-                        independently.
+
+                        Dazy can make mistakes.
+                        Verify important academic,
+                        medical, legal or financial
+                        information independently.
+
                     </div>
+
                 </main>
 
+
+                {/* ================================
+            RIGHT SIDEBAR
+        ================================= */}
+
                 <aside className="context-sidebar">
+
                     <div className="context-card">
+
                         <span className="sidebar-title">
                             LEARNING PROFILE
                         </span>
 
+
                         <div className="profile-avatar">
-                            {profile.student_name
-                                .charAt(0)
-                                .toUpperCase()}
+
+                            {
+                                profile.student_name
+                                    .charAt(0)
+                                    .toUpperCase()
+                            }
+
                         </div>
 
+
                         <h3>
-                            {profile.student_name}
+                            {
+                                profile.student_name
+                            }
                         </h3>
 
+
                         <p>
-                            {profile.course}
+                            {
+                                profile.course
+                            }
                         </p>
 
+
                         <div className="context-details">
+
                             <div>
+
                                 <span>
                                     Stage
                                 </span>
 
                                 <strong>
-                                    {profile.year}
+                                    {
+                                        profile.year
+                                    }
                                 </strong>
+
                             </div>
 
+
                             <div>
+
                                 <span>
                                     Subject
                                 </span>
 
                                 <strong>
-                                    {profile.subject ||
-                                        "General"}
+                                    {
+                                        profile.subject ||
+                                        "General"
+                                    }
                                 </strong>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
                     <div className="learning-status-card">
+
                         <span className="sidebar-title">
                             SESSION STATUS
                         </span>
 
+
                         <div className="status-ring">
+
                             <div>
+
                                 <strong>
-                                    {messages.length}
+                                    {
+                                        messages.length
+                                    }
                                 </strong>
 
                                 <span>
                                     messages
                                 </span>
+
                             </div>
+
                         </div>
+
 
                         <p>
                             Continue asking follow-up
                             questions. Dazy keeps recent
                             context during your session.
                         </p>
+
                     </div>
 
+
                     <div className="tips-card">
+
                         <span className="sidebar-title">
                             BETTER QUESTIONS
                         </span>
 
+
                         <p>
                             Try adding context like:
                         </p>
+
 
                         <span>
                             “Explain with an example”
@@ -619,9 +1041,13 @@ export default function Tutor({
                         <span>
                             “Ask me questions afterward”
                         </span>
+
                     </div>
+
                 </aside>
+
             </div>
+
         </section>
     );
 }
