@@ -22,11 +22,9 @@ export default function DazyAvatar({
             </div>
 
             <div className="dazy-body">
-
                 <div className="dazy-ear ear-left" />
                 <div className="dazy-ear ear-right" />
 
-                {/* HAIR */}
                 <div className="dazy-hair">
                     <div className="hair-back" />
                     <div className="hair-top" />
@@ -34,12 +32,9 @@ export default function DazyAvatar({
                     <span className="bang bang-one" />
                     <span className="bang bang-two" />
                     <span className="bang bang-three" />
-                    <span className="bang bang-four" />
                 </div>
 
-                {/* FACE */}
                 <div className="dazy-face">
-
                     <div className="brow brow-left" />
                     <div className="brow brow-right" />
 
@@ -52,15 +47,13 @@ export default function DazyAvatar({
                     <div className="cheek cheek-right" />
 
                     <div className="dazy-mouth" />
-
                 </div>
 
                 <div className="dazy-neck" />
 
                 <div className="dazy-chest">
-                    <span>♥</span>
+                    <span>◆</span>
                 </div>
-
             </div>
 
             {state === "listening" && (
@@ -79,7 +72,6 @@ export default function DazyAvatar({
                     <span />
                 </div>
             )}
-
         </div>
     );
 }

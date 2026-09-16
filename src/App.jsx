@@ -1,71 +1,121 @@
 import { useState } from "react";
-
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Welcome from "./pages/Welcome";
 import Tutor from "./pages/Tutor";
 
-const PROFILE_KEY = "dazy_profile";
-
 function loadProfile() {
   try {
-    const stored =
-      localStorage.getItem(PROFILE_KEY);
+    const saved = JSON.parse(
+      localStorage.getItem("dazy_profile")
+    );
 
-    if (!stored) {
-      return null;
+    if (saved?.adult_confirmed) {
+      return saved;
     }
-
-    const profile =
-      JSON.parse(stored);
-
-    if (!profile?.adult_confirmed) {
-      localStorage.removeItem(PROFILE_KEY);
-
-      return null;
-    }
-
-    return profile;
   } catch {
     return null;
   }
+
+  return null;
 }
 
 export default function App() {
-  const [profile, setProfile] =
-    useState(loadProfile);
+  const [profile, setProfile] = useState(loadProfile);
+  const [view, setView] = useState(
+    profile ? "tutor" : "home"
+  );
 
-  function startDazy(profileData) {
+  function startTutor(newProfile) {
     localStorage.setItem(
-      PROFILE_KEY,
-      JSON.stringify(profileData)
+      "dazy_profile",
+      JSON.stringify(newProfile)
     );
 
-    setProfile(profileData);
+    setProfile(newProfile);
+    setView("tutor");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function goHome() {
+    setView("home");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function goTutor() {
+    if (profile) {
+      setView("tutor");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    setView("home");
+
+    setTimeout(() => {
+      document
+        .getElementById("start")
+        ?.scrollIntoView({
+          behavior: "smooth",
+        });
+    }, 100);
   }
 
   function resetProfile() {
-    localStorage.removeItem(
-      PROFILE_KEY
-    );
-
-    localStorage.removeItem(
-      "dazy_messages"
-    );
-
-    localStorage.removeItem(
-      "dazy_session_id"
-    );
+    localStorage.removeItem("dazy_profile");
+    localStorage.removeItem("dazy_messages");
+    localStorage.removeItem("dazy_session_id");
 
     setProfile(null);
+    setView("home");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
-  return profile ? (
-    <Tutor
-      profile={profile}
-      onResetProfile={resetProfile}
-    />
-  ) : (
-    <Welcome
-      onStart={startDazy}
-    />
+  return (
+    <div className="app-shell">
+      <Navbar
+        profile={profile}
+        view={view}
+        onHome={goHome}
+        onTutor={goTutor}
+      />
+
+      <main className="app-main">
+        {view === "tutor" && profile ? (
+          <Tutor
+            profile={profile}
+            onResetProfile={resetProfile}
+          />
+        ) : (
+          <Welcome
+            profile={profile}
+            onStart={startTutor}
+            onContinue={goTutor}
+          />
+        )}
+      </main>
+
+      <Footer
+        profile={profile}
+        onTutor={goTutor}
+        onHome={goHome}
+      />
+    </div>
   );
 }

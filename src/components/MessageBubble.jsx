@@ -1,44 +1,54 @@
 export default function MessageBubble({
     message,
 }) {
-    const assistant =
-        message.role ===
-        "assistant";
+    const isUser =
+        message.role === "user";
 
     return (
         <div
-            className={`message-row ${assistant
-                    ? "assistant-message"
-                    : "user-message"
-                }`}
+            className={
+                isUser
+                    ? "message-row user-row"
+                    : "message-row assistant-row"
+            }
         >
-
-            {assistant && (
-
+            {!isUser && (
                 <div className="message-avatar">
                     D
                 </div>
-
             )}
 
-            <div className="message-container">
+            <div
+                className={
+                    isUser
+                        ? "message-bubble user-message"
+                        : "message-bubble assistant-message"
+                }
+            >
+                {!isUser && (
+                    <div className="message-meta">
+                        <strong>Dazy</strong>
 
-                <div className="message-author">
+                        <span>
+                            AI Tutor
+                        </span>
+                    </div>
+                )}
 
-                    {assistant
-                        ? "Dazy"
-                        : "You"}
-
-                </div>
-
-                <div className="message-bubble">
-
+                <div className="message-content">
                     {message.content}
-
                 </div>
 
+                <div className="message-time">
+                    {new Date(
+                        message.createdAt ||
+                        Date.now()
+                    ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })}
+                </div>
             </div>
-
         </div>
     );
 }

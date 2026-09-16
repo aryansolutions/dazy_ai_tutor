@@ -1,300 +1,185 @@
 import {
-    useCallback,
-    useRef,
+    useEffect,
     useState,
 } from "react";
 
 import {
-    sendChatMessage
+    sendChatMessage,
 } from "../services/api";
 
-const MESSAGE_KEY =
-    "dazy_messages";
+function uuid() {
+    if (crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
 
-const SESSION_KEY =
-    "dazy_session_id";
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+        .replace(/[xy]/g, (character) => {
+            const random =
+                (crypto.getRandomValues(
+                    new Uint8Array(1)
+                )[0] %
+                    16);
 
-function createId() {
-    return (
-        globalThis.crypto
-            ?.randomUUID?.() ||
-        `${Date.now()}-${Math.random()
-            .toString(16)
-            .slice(2)}`
-    );
+            const value =
+                character === "x"
+                    ? random
+                    : (random & 0x3) | 0x8;
+
+            return value.toString(16);
+        });
 }
 
-function loadOrCreateSession() {
-
-    const existing =
+function getSessionId() {
+    let sessionId =
         localStorage.getItem(
-            SESSION_KEY
+            "dazy_session_id"
         );
 
-    if (existing) {
-        return existing;
-    }
+    if (!sessionId) {
+        sessionId = uuid();
 
-    const session =
-        createId();
-
-    localStorage.setItem(
-        SESSION_KEY,
-        session
-    );
-
-    return session;
-}
-
-function loadMessages(
-    name,
-    subject
-) {
-    try {
-
-        const stored =
-            JSON.parse(
-                localStorage.getItem(
-                    MESSAGE_KEY
-                )
-            );
-
-        if (
-            Array.isArray(
-                stored
-            ) &&
-            stored.length
-        ) {
-            return stored;
-        }
-
-    } catch {
-        // Invalid local cache.
-    }
-
-    const subjectLine =
-        subject
-            ? ` I can help you with ${subject} or anything else you're studying.`
-            : "";
-
-    return [
-        {
-            id: createId(),
-
-            role:
-                "assistant",
-
-            content:
-                `Hi ${name}! I'm Dazy. 🎓${subjectLine} What do you want to understand today?`,
-        },
-    ];
-}
-
-export function useChat(
-    profile
-) {
-    const sessionRef =
-        useRef(
-            loadOrCreateSession()
-        );
-
-    const [
-        messages,
-        setMessages
-    ] = useState(() =>
-        loadMessages(
-            profile.name,
-            profile.subject
-        )
-    );
-
-    const [
-        isThinking,
-        setIsThinking
-    ] = useState(false);
-
-    const [
-        error,
-        setError
-    ] = useState("");
-
-    function persist(
-        nextMessages
-    ) {
         localStorage.setItem(
-            MESSAGE_KEY,
+            "dazy_session_id",
+            sessionId
+        );
+    }
 
-            JSON.stringify(
-                nextMessages.slice(
-                    -50
-                )
+    return sessionId;
+}
+
+function loadMessages() {
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(
+                "dazy_messages"
             )
         );
+
+        if (Array.isArray(saved)) {
+            return saved;
+        }
+    } catch {
+        // Ignore invalid local data
     }
 
-    const sendMessage =
-        useCallback(
-            async (text) => {
+    return [];
+}
 
-                const clean =
-                    text.trim();
+export function useChat(profile) {
+    const [messages, setMessages] =
+        useState(loadMessages);
 
-                if (
-                    !clean ||
-                    isThinking
-                ) {
-                    return;
-                }
+    const [isLoading, setIsLoading] =
+        useState(false);
 
-                setError("");
+    const [error, setError] =
+        useState("");
 
-                const userMessage = {
-                    id: createId(),
+    useEffect(() => {
+        localStorage.setItem(
+            "dazy_messages",
+            JSON.stringify(messages)
+        );
+    }, [messages]);
 
-                    role: "user",
+    async function sendMessage(
+        text,
+        studyMode = "Teach"
+    ) {
+        const cleanText = text.trim();
 
-                    content: clean,
-                };
+        if (!cleanText || isLoading) {
+            return null;
+        }
 
-                setMessages(
-                    (current) => {
+        const userMessage = {
+            id: uuid(),
+            role: "user",
+            content: cleanText,
+            createdAt: Date.now(),
+        };
 
-                        const next = [
-                            ...current,
-                            userMessage,
-                        ];
+        setMessages((current) => [
+            ...current,
+            userMessage,
+        ]);
 
-                        persist(next);
+        setError("");
+        setIsLoading(true);
 
-                        return next;
-                    }
-                );
+        try {
+            const response =
+                await sendChatMessage({
+                    student_name:
+                        profile.student_name,
 
-                setIsThinking(true);
+                    course:
+                        profile.course,
 
-                try {
+                    year:
+                        profile.year,
 
-                    const result =
-                        await sendChatMessage({
-                            student_name:
-                                profile.name,
+                    subject:
+                        profile.subject || "",
 
-                            course:
-                                profile.course,
+                    message:
+                        `Study mode: ${studyMode}. ${cleanText}`,
 
-                            year:
-                                profile.year,
+                    session_id:
+                        getSessionId(),
 
-                            subject:
-                                profile.subject ||
-                                "",
+                    adult_confirmed: true,
+                });
 
-                            message:
-                                clean,
+            const assistantMessage = {
+                id: uuid(),
+                role: "assistant",
+                content:
+                    response.response,
 
-                            session_id:
-                                sessionRef.current,
+                emotion:
+                    response.emotion ||
+                    "explaining",
 
-                            adult_confirmed:
-                                true,
-                        });
+                createdAt: Date.now(),
+            };
 
-                    const assistantMessage = {
-                        id:
-                            createId(),
+            setMessages((current) => [
+                ...current,
+                assistantMessage,
+            ]);
 
-                        role:
-                            "assistant",
+            return response.response;
+        } catch (requestError) {
+            setError(
+                requestError.message ||
+                "Dazy could not respond."
+            );
 
-                        content:
-                            result.response,
+            return null;
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
-                        emotion:
-                            result.emotion ||
-                            "explaining",
-                    };
-
-                    setMessages(
-                        (current) => {
-
-                            const next = [
-                                ...current,
-                                assistantMessage,
-                            ];
-
-                            persist(next);
-
-                            return next;
-                        }
-                    );
-
-                    return assistantMessage;
-
-                } catch (err) {
-
-                    setError(
-                        err.message ||
-                        "Dazy couldn't respond right now. Please try again."
-                    );
-
-                } finally {
-
-                    setIsThinking(
-                        false
-                    );
-
-                }
-
-            },
-            [
-                profile,
-                isThinking,
-            ]
+    function clearMessages() {
+        localStorage.removeItem(
+            "dazy_messages"
         );
 
-    const clearConversation =
-        useCallback(() => {
+        localStorage.removeItem(
+            "dazy_session_id"
+        );
 
-            const nextSession =
-                createId();
-
-            sessionRef.current =
-                nextSession;
-
-            localStorage.setItem(
-                SESSION_KEY,
-                nextSession
-            );
-
-            const next = [
-                {
-                    id:
-                        createId(),
-
-                    role:
-                        "assistant",
-
-                    content:
-                        `Fresh start, ${profile.name}! What should we study now? ✨`,
-                },
-            ];
-
-            localStorage.setItem(
-                MESSAGE_KEY,
-                JSON.stringify(next)
-            );
-
-            setMessages(next);
-
-            setError("");
-
-        }, [profile.name]);
+        setMessages([]);
+        setError("");
+    }
 
     return {
         messages,
-        sendMessage,
-        clearConversation,
-        isThinking,
+        isLoading,
         error,
+        sendMessage,
+        clearMessages,
     };
 }

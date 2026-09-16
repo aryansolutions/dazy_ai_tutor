@@ -1,390 +1,627 @@
 import {
     useEffect,
-    useRef,
     useState,
 } from "react";
 
-import Header from "../components/Header";
 import DazyAvatar from "../components/DazyAvatar";
 import ChatWindow from "../components/ChatWindow";
 import ChatComposer from "../components/ChatComposer";
-import QuickPrompts from "../components/QuickPrompts";
 
 import {
-    useChat
+    useChat,
 } from "../hooks/useChat";
 
 import {
-    useSpeechRecognition
+    useSpeechRecognition,
 } from "../hooks/useSpeechRecognition";
 
 import {
-    useSpeechSynthesis
+    useSpeechSynthesis,
 } from "../hooks/useSpeechSynthesis";
+
+const STUDY_MODES = [
+    {
+        name: "Teach",
+        icon: "01",
+        description:
+            "Understand concepts clearly",
+    },
+    {
+        name: "Quiz",
+        icon: "02",
+        description:
+            "Test your knowledge",
+    },
+    {
+        name: "Interview",
+        icon: "03",
+        description:
+            "Practice questions",
+    },
+    {
+        name: "Revision",
+        icon: "04",
+        description:
+            "Review key ideas",
+    },
+    {
+        name: "Exam Sprint",
+        icon: "05",
+        description:
+            "Focus on high-priority topics",
+    },
+];
+
+const MODE_PROMPTS = {
+    Teach: [
+        "Explain this topic from the basics",
+        "Give me a practical example",
+        "Explain this like I am learning it for the first time",
+    ],
+
+    Quiz: [
+        "Quiz me with 5 questions",
+        "Ask me one question at a time",
+        "Give me a difficult practice question",
+    ],
+
+    Interview: [
+        "Start a mock interview",
+        "Ask me technical interview questions",
+        "Evaluate my answer like an interviewer",
+    ],
+
+    Revision: [
+        "Give me quick revision notes",
+        "Summarize the most important points",
+        "Create a last-minute revision checklist",
+    ],
+
+    "Exam Sprint": [
+        "What should I study first?",
+        "Give me the highest-priority concepts",
+        "Make a short exam preparation plan",
+    ],
+};
+
+function formatTime(seconds) {
+    const minutes = Math.floor(
+        seconds / 60
+    );
+
+    const remaining =
+        seconds % 60;
+
+    return `${String(minutes).padStart(
+        2,
+        "0"
+    )}:${String(remaining).padStart(
+        2,
+        "0"
+    )}`;
+}
 
 export default function Tutor({
     profile,
     onResetProfile,
 }) {
+    const [studyMode, setStudyMode] =
+        useState("Teach");
+
     const [draft, setDraft] =
         useState("");
 
-    const [
-        autoSpeak,
-        setAutoSpeak
-    ] = useState(true);
+    const [autoSpeak, setAutoSpeak] =
+        useState(true);
 
-    const lastSpokenId =
-        useRef(null);
+    const [timerSeconds, setTimerSeconds] =
+        useState(25 * 60);
+
+    const [timerRunning, setTimerRunning] =
+        useState(false);
 
     const {
         messages,
-        sendMessage,
-        clearConversation,
-        isThinking,
+        isLoading,
         error,
+        sendMessage,
+        clearMessages,
     } = useChat(profile);
 
     const {
         speak,
-        stopSpeaking,
-        isSpeaking,
-        supported: speechSupported,
+        cancel,
+        speaking,
     } = useSpeechSynthesis();
 
     const {
-        supported:
-        microphoneSupported,
-
+        supported,
         isListening,
-        transcript,
         startListening,
         stopListening,
-        resetTranscript,
-    } = useSpeechRecognition();
+    } = useSpeechRecognition(
+        (text) => setDraft(text)
+    );
 
     useEffect(() => {
-
-        if (transcript) {
-            setDraft(transcript);
-        }
-
-    }, [transcript]);
-
-    useEffect(() => {
-
-        if (!autoSpeak) {
+        if (!timerRunning) {
             return;
         }
 
-        if (!speechSupported) {
-            return;
-        }
+        const interval =
+            setInterval(() => {
+                setTimerSeconds(
+                    (current) => {
+                        if (current <= 1) {
+                            clearInterval(
+                                interval
+                            );
 
-        if (isThinking) {
-            return;
-        }
+                            setTimerRunning(
+                                false
+                            );
 
-        const latest =
-            messages[
-            messages.length - 1
-            ];
+                            return 0;
+                        }
 
-        if (!latest) {
-            return;
-        }
+                        return current - 1;
+                    }
+                );
+            }, 1000);
 
-        if (
-            latest.role !==
-            "assistant"
-        ) {
-            return;
-        }
-
-        if (
-            lastSpokenId.current ===
-            latest.id
-        ) {
-            return;
-        }
-
-        lastSpokenId.current =
-            latest.id;
-
-        speak(
-            latest.content
-        );
-
-    }, [
-        messages,
-        autoSpeak,
-        speechSupported,
-        isThinking,
-        speak,
-    ]);
-
-    let avatarState =
-        "idle";
-
-    if (isListening) {
-        avatarState =
-            "listening";
-    } else if (isThinking) {
-        avatarState =
-            "thinking";
-    } else if (isSpeaking) {
-        avatarState =
-            "speaking";
-    }
+        return () =>
+            clearInterval(interval);
+    }, [timerRunning]);
 
     async function handleSend(
-        customMessage = null
+        customText
     ) {
-        const message =
+        const text =
             (
-                customMessage ??
+                customText ??
                 draft
             ).trim();
 
-        if (!message) {
+        if (!text) {
             return;
         }
-
-        if (isThinking) {
-            return;
-        }
-
-        stopSpeaking();
-
-        stopListening();
-
-        resetTranscript();
 
         setDraft("");
 
-        await sendMessage(
-            message
-        );
-    }
+        if (speaking) {
+            cancel();
+        }
 
-    function handleMicrophone() {
+        const response =
+            await sendMessage(
+                text,
+                studyMode
+            );
 
         if (
-            !microphoneSupported ||
-            isThinking
+            response &&
+            autoSpeak
         ) {
-            return;
+            speak(response);
         }
-
-        if (isListening) {
-
-            stopListening();
-
-            return;
-        }
-
-        stopSpeaking();
-
-        resetTranscript();
-
-        setDraft("");
-
-        startListening();
     }
 
-    function handleNewConversation() {
+    function toggleVoice() {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
+    }
 
-        stopSpeaking();
+    function resetTimer() {
+        setTimerRunning(false);
+        setTimerSeconds(25 * 60);
+    }
 
-        stopListening();
+    let avatarState = "idle";
 
-        clearConversation();
+    if (isListening) {
+        avatarState = "listening";
+    } else if (isLoading) {
+        avatarState = "thinking";
+    } else if (speaking) {
+        avatarState = "speaking";
     }
 
     return (
-        <main className="tutor-page">
+        <section className="workspace-page">
+            <div className="workspace-topbar">
+                <div>
+                    <span className="workspace-label">
+                        LEARNING WORKSPACE
+                    </span>
 
-            <div className="blob tutor-blob-one" />
-            <div className="blob tutor-blob-two" />
+                    <h1>
+                        {profile.subject
+                            ? profile.subject
+                            : "Study session"}
+                    </h1>
+                </div>
 
-            <Header
-                profile={profile}
-                autoSpeak={autoSpeak}
-                setAutoSpeak={setAutoSpeak}
-                onClear={
-                    handleNewConversation
-                }
-                onResetProfile={
-                    onResetProfile
-                }
-            />
-
-            <section className="tutor-layout">
-
-                <aside className="dazy-side">
-
-                    <div className="side-intro">
-
-                        <span className="eyebrow">
-                            YOUR AI STUDY PARTNER
+                <div className="workspace-top-actions">
+                    <div className="workspace-course">
+                        <span>
+                            {profile.course}
                         </span>
 
-                        <h2>
-                            Hi, {profile.name}!
-                        </h2>
-
-                        <p>
-                            {profile.course}
-
-                            {profile.subject
-                                ? ` · ${profile.subject}`
-                                : ""}
-                        </p>
-
+                        <small>
+                            {profile.year}
+                        </small>
                     </div>
 
-                    <div className="large-avatar-container">
-
-                        <DazyAvatar
-                            state={avatarState}
-                            size="large"
-                        />
-
-                    </div>
-
-                    <div
-                        className={`dazy-status ${avatarState}`}
+                    <button
+                        className="outline-danger"
+                        onClick={onResetProfile}
                     >
+                        Change profile
+                    </button>
+                </div>
+            </div>
 
-                        <span />
+            <div className="workspace-layout">
+                <aside className="study-sidebar">
+                    <div className="sidebar-section">
+                        <span className="sidebar-title">
+                            STUDY MODE
+                        </span>
 
-                        {avatarState ===
-                            "idle" &&
-                            "Ready when you are"}
+                        <div className="study-mode-list">
+                            {STUDY_MODES.map(
+                                (mode) => (
+                                    <button
+                                        key={mode.name}
+                                        className={`study-mode-button ${studyMode ===
+                                                mode.name
+                                                ? "mode-selected"
+                                                : ""
+                                            }`}
+                                        onClick={() =>
+                                            setStudyMode(
+                                                mode.name
+                                            )
+                                        }
+                                    >
+                                        <span className="mode-index">
+                                            {mode.icon}
+                                        </span>
 
-                        {avatarState ===
-                            "listening" &&
-                            "I'm listening..."}
+                                        <div>
+                                            <strong>
+                                                {mode.name}
+                                            </strong>
 
-                        {avatarState ===
-                            "thinking" &&
-                            "Working it out..."}
-
-                        {avatarState ===
-                            "speaking" &&
-                            "Explaining..."}
-
+                                            <small>
+                                                {
+                                                    mode.description
+                                                }
+                                            </small>
+                                        </div>
+                                    </button>
+                                )
+                            )}
+                        </div>
                     </div>
 
-                    <div className="suggestion-card">
+                    <div className="focus-card">
+                        <div className="focus-heading">
+                            <div>
+                                <span>
+                                    FOCUS TIMER
+                                </span>
 
-                        <span>💡</span>
+                                <strong>
+                                    Deep work
+                                </strong>
+                            </div>
 
-                        <p>
-                            Try:{" "}
+                            <div className="timer-dot" />
+                        </div>
 
-                            <strong>
-                                “Explain this like I
-                                have an exam tomorrow.”
-                            </strong>
-                        </p>
+                        <div className="focus-time">
+                            {formatTime(
+                                timerSeconds
+                            )}
+                        </div>
 
+                        <div className="timer-track">
+                            <div
+                                style={{
+                                    width: `${(timerSeconds /
+                                            (25 * 60)) *
+                                        100
+                                        }%`,
+                                }}
+                            />
+                        </div>
+
+                        <div className="focus-actions">
+                            <button
+                                onClick={() =>
+                                    setTimerRunning(
+                                        (current) =>
+                                            !current
+                                    )
+                                }
+                            >
+                                {timerRunning
+                                    ? "Pause"
+                                    : "Start"}
+                            </button>
+
+                            <button
+                                onClick={resetTimer}
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </div>
 
-                </aside>
-
-                <section className="chat-card">
-
-                    <header className="chat-header">
+                    <div className="session-card">
+                        <span className="sidebar-title">
+                            SESSION
+                        </span>
 
                         <div>
-
-                            <span className="eyebrow">
-                                DAZY TUTOR
+                            <span>
+                                Messages
                             </span>
 
-                            <h3>
-                                What do you want to
-                                understand today?
-                            </h3>
-
+                            <strong>
+                                {messages.length}
+                            </strong>
                         </div>
 
-                        <div className="online-badge">
+                        <div>
+                            <span>
+                                Mode
+                            </span>
 
-                            <span />
-
-                            AI ready
-
+                            <strong>
+                                {studyMode}
+                            </strong>
                         </div>
 
-                    </header>
+                        <div>
+                            <span>
+                                Voice
+                            </span>
+
+                            <strong>
+                                {supported
+                                    ? "Ready"
+                                    : "Unavailable"}
+                            </strong>
+                        </div>
+
+                        <button
+                            onClick={clearMessages}
+                        >
+                            Clear conversation
+                        </button>
+                    </div>
+                </aside>
+
+                <main className="tutor-panel">
+                    <div className="tutor-header">
+                        <div className="tutor-identity">
+                            <div className="mini-dazy">
+                                <DazyAvatar
+                                    state={avatarState}
+                                    size="small"
+                                />
+                            </div>
+
+                            <div>
+                                <div className="assistant-name-row">
+                                    <h2>Dazy</h2>
+
+                                    <span className="verified-badge">
+                                        AI
+                                    </span>
+                                </div>
+
+                                <p>
+                                    {isListening
+                                        ? "Listening to you..."
+                                        : isLoading
+                                            ? "Thinking..."
+                                            : speaking
+                                                ? "Speaking..."
+                                                : `${studyMode} mode • Ready`}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="tutor-controls">
+                            <label className="speak-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={autoSpeak}
+                                    onChange={(event) =>
+                                        setAutoSpeak(
+                                            event.target
+                                                .checked
+                                        )
+                                    }
+                                />
+
+                                <span />
+                                Voice replies
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="active-mode-banner">
+                        <div>
+                            <span>
+                                ACTIVE MODE
+                            </span>
+
+                            <strong>
+                                {studyMode}
+                            </strong>
+                        </div>
+
+                        <p>
+                            {
+                                STUDY_MODES.find(
+                                    (mode) =>
+                                        mode.name ===
+                                        studyMode
+                                )?.description
+                            }
+                        </p>
+                    </div>
 
                     <ChatWindow
                         messages={messages}
-                        isThinking={
-                            isThinking
-                        }
+                        isLoading={isLoading}
                     />
 
-                    {messages.length <=
-                        1 && (
-
-                            <QuickPrompts
-                                onSelect={
-                                    handleSend
-                                }
-                            />
-
-                        )}
-
                     {error && (
-
                         <div className="chat-error">
+                            <span>!</span>
                             {error}
                         </div>
-
                     )}
+
+                    <div className="quick-prompts">
+                        {MODE_PROMPTS[
+                            studyMode
+                        ].map((prompt) => (
+                            <button
+                                key={prompt}
+                                onClick={() =>
+                                    handleSend(prompt)
+                                }
+                                disabled={isLoading}
+                            >
+                                {prompt}
+                            </button>
+                        ))}
+                    </div>
 
                     <ChatComposer
                         value={draft}
-                        onChange={
-                            setDraft
-                        }
+                        onChange={setDraft}
                         onSend={() =>
                             handleSend()
                         }
-                        onMicrophone={
-                            handleMicrophone
-                        }
+                        onVoice={toggleVoice}
                         isListening={
                             isListening
                         }
-                        isThinking={
-                            isThinking
+                        speechSupported={
+                            supported
                         }
-                        microphoneSupported={
-                            microphoneSupported
-                        }
+                        isLoading={isLoading}
                     />
 
-                    {!microphoneSupported && (
+                    <div className="ai-disclaimer">
+                        Dazy can make mistakes. Verify
+                        important academic, medical,
+                        legal or financial information
+                        independently.
+                    </div>
+                </main>
 
-                        <p className="voice-warning">
+                <aside className="context-sidebar">
+                    <div className="context-card">
+                        <span className="sidebar-title">
+                            LEARNING PROFILE
+                        </span>
 
-                            Voice input is unavailable
-                            in this browser. Typing
-                            still works; use Chrome or
-                            Edge for microphone input.
+                        <div className="profile-avatar">
+                            {profile.student_name
+                                .charAt(0)
+                                .toUpperCase()}
+                        </div>
 
+                        <h3>
+                            {profile.student_name}
+                        </h3>
+
+                        <p>
+                            {profile.course}
                         </p>
 
-                    )}
+                        <div className="context-details">
+                            <div>
+                                <span>
+                                    Stage
+                                </span>
 
-                </section>
+                                <strong>
+                                    {profile.year}
+                                </strong>
+                            </div>
 
-            </section>
+                            <div>
+                                <span>
+                                    Subject
+                                </span>
 
-        </main>
+                                <strong>
+                                    {profile.subject ||
+                                        "General"}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="learning-status-card">
+                        <span className="sidebar-title">
+                            SESSION STATUS
+                        </span>
+
+                        <div className="status-ring">
+                            <div>
+                                <strong>
+                                    {messages.length}
+                                </strong>
+
+                                <span>
+                                    messages
+                                </span>
+                            </div>
+                        </div>
+
+                        <p>
+                            Continue asking follow-up
+                            questions. Dazy keeps recent
+                            context during your session.
+                        </p>
+                    </div>
+
+                    <div className="tips-card">
+                        <span className="sidebar-title">
+                            BETTER QUESTIONS
+                        </span>
+
+                        <p>
+                            Try adding context like:
+                        </p>
+
+                        <span>
+                            “Explain with an example”
+                        </span>
+
+                        <span>
+                            “Compare these two concepts”
+                        </span>
+
+                        <span>
+                            “Ask me questions afterward”
+                        </span>
+                    </div>
+                </aside>
+            </div>
+        </section>
     );
 }
